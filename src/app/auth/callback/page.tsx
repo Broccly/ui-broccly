@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import AppShell from "@/components/AppShell";
 
-export default function CallbackPage() {
+function CallbackHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { login } = useAuth();
@@ -30,11 +30,18 @@ export default function CallbackPage() {
       });
   }, [searchParams, router, login]);
 
+  return null;
+}
+
+export default function CallbackPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-center min-h-[40vh]">
         <p className="text-gray-500">Signing you in...</p>
       </div>
+      <Suspense>
+        <CallbackHandler />
+      </Suspense>
     </AppShell>
   );
 }
