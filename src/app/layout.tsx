@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import GoogleAuthProvider from "@/components/GoogleAuthProvider";
 
 export const metadata: Metadata = {
-  title: "BlogPlatform",
-  description: "A Medium-like blogging platform",
+  title: "Broccly",
+  description: "Your space to read, write, and share ideas.",
+  icons: {
+    icon: "/broccly.png",
+  },
 };
 
 export default function RootLayout({
@@ -15,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased bg-white text-gray-900 min-h-screen">
-        <AuthProvider>{children}</AuthProvider>
+        <GoogleAuthProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </GoogleAuthProvider>
       </body>
     </html>
   );

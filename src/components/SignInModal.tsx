@@ -1,16 +1,45 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useAuth } from "@/context/AuthContext";
 
-const GOOGLE_AUTH_URL =
-  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000") + "/api/auth/google";
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 interface SignInModalProps {
   onClose: () => void;
 }
 
 export default function SignInModal({ onClose }: SignInModalProps) {
+  const { login } = useAuth();
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleSuccess = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const res = await fetch(`${API}/api/auth/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ googleToken: tokenResponse.access_token }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error ?? "Authentication failed");
+        }
+        const { accessToken, refreshToken } = await res.json();
+        login({ accessToken, refreshToken });
+        onClose();
+        router.push("/feed");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Authentication failed");
+      }
+    },
+    onError: () => setError("Google sign-in failed. Please try again."),
+  });
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -41,12 +70,14 @@ export default function SignInModal({ onClose }: SignInModalProps) {
         </h2>
 
         <div className="flex flex-col gap-3 w-full">
-          <SocialButton icon={<GoogleIcon />} label="Sign in with Google" href={GOOGLE_AUTH_URL} />
+          <SocialButton icon={<GoogleIcon />} label="Sign in with Google" onClick={() => handleGoogleSuccess()} />
           <SocialButton icon={<FacebookIcon />} label="Sign in with Facebook" href="/login" />
           <SocialButton icon={<AppleIcon />} label="Sign in with Apple" href="/login" />
           <SocialButton icon={<XIcon />} label="Sign in with X" href="/login" />
           <SocialButton icon={<EmailIcon />} label="Sign in with email" href="/login" />
         </div>
+
+        {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
 
         <label className="flex items-center gap-2 mt-6 text-sm text-gray-700 cursor-pointer select-none">
           <input type="checkbox" defaultChecked className="w-4 h-4 accent-gray-900" />
@@ -82,20 +113,25 @@ function SocialButton({
   icon,
   label,
   href,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
 }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-4 w-full border border-gray-300 rounded-full px-5 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 transition-colors"
-    >
+  const className =
+    "flex items-center gap-4 w-full border border-gray-300 rounded-full px-5 py-3 text-sm font-medium text-gray-800 hover:bg-gray-50 transition-colors";
+  const content = (
+    <>
       <span className="w-5 h-5 flex items-center justify-center shrink-0">{icon}</span>
       <span className="flex-1 text-center">{label}</span>
-    </Link>
+    </>
   );
+  if (onClick) {
+    return <button onClick={onClick} className={className}>{content}</button>;
+  }
+  return <Link href={href!} className={className}>{content}</Link>;
 }
 
 function GoogleIcon() {

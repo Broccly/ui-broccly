@@ -1,9 +1,6 @@
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  tokenType: string;
-  expiresInSeconds: number;
-  userId: string;
 }
 
 export interface PostSummary {

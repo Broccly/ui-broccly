@@ -2,51 +2,51 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
+import { useGoogleLogin } from "@react-oauth/google";
 import { Button } from "@/components/ui/button";
 import AppShell from "@/components/AppShell";
+import { useAuth } from "@/context/AuthContext";
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 export default function LoginPage() {
-  const [mockSub, setMockSub] = useState("user-1");
-  const [username, setUsername] = useState("testuser");
+  const { login } = useAuth();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const params = new URLSearchParams({ mock_sub: mockSub, username });
-    router.push(`/auth/callback?${params.toString()}`);
-  }
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setError(null);
+      try {
+        const res = await fetch(`${API}/api/auth/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ googleToken: tokenResponse.access_token }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error ?? "Authentication failed");
+        }
+        const { accessToken, refreshToken } = await res.json();
+        login({ accessToken, refreshToken });
+        router.push("/feed");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Authentication failed");
+      }
+    },
+    onError: () => setError("Google sign-in failed. Please try again."),
+  });
 
   return (
     <AppShell>
-      <div className="max-w-sm mx-auto mt-16">
-        <h1 className="text-2xl font-bold mb-2">Sign in</h1>
-        <p className="text-sm text-gray-500 mb-8">
-          Dev mode: enter any user ID and username to sign in.
-        </p>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">User ID (mock_sub)</label>
-            <Input
-              type="text"
-              value={mockSub}
-              onChange={(e) => setMockSub(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Username</label>
-            <Input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full">
-            Sign in with Google (Mock)
-          </Button>
-        </form>
+      <div className="max-w-sm mx-auto mt-16 text-center">
+        <h1 className="text-2xl font-bold mb-8">Sign in to Broccly</h1>
+        <Button className="w-full" onClick={() => handleGoogleLogin()}>
+          Sign in with Google
+        </Button>
+        {error && (
+          <p className="mt-4 text-sm text-red-500">{error}</p>
+        )}
       </div>
     </AppShell>
   );
