@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
+import type { AuthResponse } from "@/types/api";
 import AppShell from "@/components/AppShell";
 
 function CallbackHandler() {
@@ -16,18 +16,24 @@ function CallbackHandler() {
     if (called.current) return;
     called.current = true;
 
-    const mockSub = searchParams.get("mock_sub") ?? "user-1";
-    const username = searchParams.get("username") ?? "user";
+    const accessToken = searchParams.get("access_token");
+    const refreshToken = searchParams.get("refresh_token");
 
-    api
-      .loginMock(mockSub, username)
-      .then((resp) => {
-        login(resp);
-        router.replace("/");
-      })
-      .catch(() => {
-        router.replace("/login");
-      });
+    if (!accessToken || !refreshToken) {
+      router.replace("/login?error=missing_tokens");
+      return;
+    }
+
+    const resp: AuthResponse = {
+      accessToken,
+      refreshToken,
+      tokenType: "Bearer",
+      expiresInSeconds: 3600,
+      userId: "",
+    };
+
+    login(resp);
+    router.replace("/");
   }, [searchParams, router, login]);
 
   return null;

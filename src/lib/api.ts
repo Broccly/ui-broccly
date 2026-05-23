@@ -1,5 +1,4 @@
 import type {
-  AuthResponse,
   CommentsResponse,
   CreatePostInput,
   FeedResponse,
@@ -45,13 +44,6 @@ async function apiFetch<T>(
 }
 
 export const api = {
-  loginMock(mockSub: string, username: string): Promise<AuthResponse> {
-    const params = new URLSearchParams({ mock_sub: mockSub, username });
-    return apiFetch<AuthResponse>(
-      `/api/auth/oauth/google/callback?${params.toString()}`
-    );
-  },
-
   getFeed(cursor?: string): Promise<FeedResponse> {
     const params = new URLSearchParams({ limit: "20" });
     if (cursor) params.set("cursor", cursor);

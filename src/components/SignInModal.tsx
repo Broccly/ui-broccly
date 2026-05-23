@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 import Link from "next/link";
 
+const GOOGLE_AUTH_URL =
+  (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000") + "/api/auth/google";
+
 interface SignInModalProps {
   onClose: () => void;
 }
@@ -38,7 +41,7 @@ export default function SignInModal({ onClose }: SignInModalProps) {
         </h2>
 
         <div className="flex flex-col gap-3 w-full">
-          <SocialButton icon={<GoogleIcon />} label="Sign in with Google" href="/login" />
+          <SocialButton icon={<GoogleIcon />} label="Sign in with Google" href={GOOGLE_AUTH_URL} />
           <SocialButton icon={<FacebookIcon />} label="Sign in with Facebook" href="/login" />
           <SocialButton icon={<AppleIcon />} label="Sign in with Apple" href="/login" />
           <SocialButton icon={<XIcon />} label="Sign in with X" href="/login" />
