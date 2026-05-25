@@ -9,8 +9,6 @@ import {
   FileText,
   BarChart2,
   Users,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useSidebar } from "@/context/SidebarContext";
@@ -81,20 +79,11 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-full bg-white border-r border-gray-100 flex flex-col z-30 transition-all duration-200
+      className={`fixed left-0 top-14 h-[calc(100vh-3.5rem)] bg-white border-r border-gray-100 flex flex-col z-30 transition-all duration-200
         ${expanded ? "w-52" : "w-14"}`}
     >
-      {/* Logo / brand mark */}
-      <div className={`flex items-center h-16 px-3 shrink-0 ${expanded ? "justify-between" : "justify-center"}`}>
-        {expanded && (
-          <span className="font-bold text-gray-900 text-lg tracking-tight select-none">
-            broccly
-          </span>
-        )}
-      </div>
-
       {/* Nav items */}
-      <nav className="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto">
+      <nav className="flex-1 flex flex-col gap-0.5 px-2 py-3 overflow-y-auto">
         {topItems.map(renderItem)}
 
         {/* Divider */}
@@ -102,17 +91,6 @@ export default function Sidebar() {
 
         {bottomItems.map(renderItem)}
       </nav>
-
-      {/* Collapse toggle */}
-      <div className="px-2 pb-4 shrink-0">
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="flex items-center justify-center w-full h-9 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors"
-          aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
-        >
-          {expanded ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-        </button>
-      </div>
     </aside>
   );
 }
