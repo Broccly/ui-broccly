@@ -33,11 +33,11 @@ const bottomItems: NavItem[] = [
 ];
 
 export default function Sidebar() {
-  const { isLoggedIn, email } = useAuth();
+  const { isLoggedIn, hydrated, email } = useAuth();
   const { expanded, setExpanded } = useSidebar();
   const pathname = usePathname();
 
-  if (!isLoggedIn) return null;
+  if (!hydrated || !isLoggedIn) return null;
 
   const username = email ? email.split("@")[0] : "me";
   const profileItem: NavItem = {

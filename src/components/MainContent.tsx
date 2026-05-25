@@ -4,10 +4,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useSidebar } from "@/context/SidebarContext";
 
 export default function MainContent({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, hydrated } = useAuth();
   const { expanded } = useSidebar();
 
-  const marginClass = !isLoggedIn
+  const marginClass = !hydrated || !isLoggedIn
     ? ""
     : expanded
     ? "ml-52"

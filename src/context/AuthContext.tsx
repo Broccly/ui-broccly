@@ -16,6 +16,7 @@ interface AuthState {
   email: string | null;
   role: "user" | "moderator" | "admin";
   isLoggedIn: boolean;
+  hydrated: boolean;
 }
 
 interface AuthContextValue extends AuthState {
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: null,
     role: "user",
     isLoggedIn: false,
+    hydrated: false,
   });
   const [token, setToken] = useState<string | undefined>(undefined);
 
@@ -41,13 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const payload = decodeToken(t);
       if (payload && payload.exp * 1000 > Date.now()) {
         setToken(t);
-        setState({ userId: payload.sub, email: null, role: payload.role ?? "user", isLoggedIn: true });
+        setState({ userId: payload.sub, email: null, role: payload.role ?? "user", isLoggedIn: true, hydrated: true });
         api.getMe(t).then(({ user }) => {
           setState((prev) => ({ ...prev, email: user.email }));
         }).catch(() => {});
       } else {
         clearTokens();
+        setState((prev) => ({ ...prev, hydrated: true }));
       }
+    } else {
+      setState((prev) => ({ ...prev, hydrated: true }));
     }
   }, []);
 
@@ -56,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const payload = decodeToken(resp.accessToken);
     if (payload) {
       const t = resp.accessToken;
-      setState({ userId: payload.sub, email: null, role: payload.role ?? "user", isLoggedIn: true });
+      setState({ userId: payload.sub, email: null, role: payload.role ?? "user", isLoggedIn: true, hydrated: true });
       setToken(t);
       api.getMe(t).then(({ user }) => {
         setState((prev) => ({ ...prev, email: user.email }));
@@ -66,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   function logout() {
     clearTokens();
-    setState({ userId: null, email: null, role: "user", isLoggedIn: false });
+    setState({ userId: null, email: null, role: "user", isLoggedIn: false, hydrated: true });
     setToken(undefined);
   }
 
