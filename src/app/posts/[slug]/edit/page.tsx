@@ -53,7 +53,7 @@ export default function EditPostPage({
         { title, excerpt: excerpt || undefined, bodyHtml, bodyJson, visibility },
         token
       );
-      router.push(`/posts/${updated.slug}`);
+      router.push(`/feed`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update post.");
       setSubmitting(false);
