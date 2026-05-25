@@ -24,7 +24,7 @@ export default function Nav() {
   }
 
   return (
-    <nav className="sticky top-0 z-40 bg-white border-b border-gray-200">
+    <nav className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
       <div className="w-full px-6 h-14 flex items-center gap-4">
         {/* Sidebar collapse toggle — only when logged in */}
         {hydrated && isLoggedIn && (

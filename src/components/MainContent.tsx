@@ -14,7 +14,7 @@ export default function MainContent({ children }: { children: React.ReactNode })
     : "ml-14";
 
   return (
-    <div className={`transition-all duration-200 ${marginClass}`}>
+    <div className={`pt-14 transition-all duration-200 ${marginClass}`}>
       {children}
     </div>
   );
