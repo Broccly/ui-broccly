@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import SignInModal from "@/components/SignInModal";
 import { PanelLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useNewStory } from "@/context/NewStoryContext";
@@ -11,6 +12,7 @@ import { useSidebar } from "@/context/SidebarContext";
 export default function Nav() {
   const { isLoggedIn, hydrated, logout } = useAuth();
   const { expanded, setExpanded } = useSidebar();
+  const [showSignIn, setShowSignIn] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -24,6 +26,7 @@ export default function Nav() {
   }
 
   return (
+    <>
     <nav className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
       <div className="w-full px-6 h-14 flex items-center gap-4">
         {/* Sidebar collapse toggle — only when logged in */}
@@ -86,12 +89,18 @@ export default function Nav() {
               </button>
             </>
           ) : (
-            <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+            <button
+              onClick={() => setShowSignIn(true)}
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
               Sign in
-            </Link>
+            </button>
           )}
         </div>
       </div>
     </nav>
+
+    {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} />}
+    </>
   );
 }
