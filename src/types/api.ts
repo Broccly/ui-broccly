@@ -44,21 +44,28 @@ export interface CommentsResponse {
 }
 
 export interface PostMutationResponse {
+  message: string;
   post: {
-    id: string;
-    slug: string;
-    status: string;
-    published_at: string | null;
+    _id: string;
+    title: string;
+    body: string;
+    author: string;
   };
 }
 
 export interface CreatePostInput {
   title: string;
-  excerpt?: string;
-  bodyJson: unknown;
-  bodyHtml: string;
-  visibility?: "public" | "unlisted" | "private";
-  publish?: boolean;
+  body: string;
+  author: string;
+}
+
+export interface MyPost {
+  _id: string;
+  title: string;
+  body: string;
+  author: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface UpdatePostInput {

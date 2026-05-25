@@ -9,9 +9,11 @@ import {
 } from "react";
 import { clearTokens, decodeToken, getToken, setTokens } from "@/lib/auth";
 import type { AuthResponse } from "@/types/api";
+import { api } from "@/lib/api";
 
 interface AuthState {
   userId: string | null;
+  email: string | null;
   role: "user" | "moderator" | "admin";
   isLoggedIn: boolean;
 }
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     userId: null,
+    email: null,
     role: "user",
     isLoggedIn: false,
   });
@@ -37,8 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (t) {
       const payload = decodeToken(t);
       if (payload && payload.exp * 1000 > Date.now()) {
-        setState({ userId: payload.sub, role: payload.role ?? "user", isLoggedIn: true });
         setToken(t);
+        setState({ userId: payload.sub, email: null, role: payload.role ?? "user", isLoggedIn: true });
+        api.getMe(t).then(({ user }) => {
+          setState((prev) => ({ ...prev, email: user.email }));
+        }).catch(() => {});
       } else {
         clearTokens();
       }
@@ -49,14 +55,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokens(resp.accessToken, resp.refreshToken);
     const payload = decodeToken(resp.accessToken);
     if (payload) {
-      setState({ userId: payload.sub, role: payload.role ?? "user", isLoggedIn: true });
-      setToken(resp.accessToken);
+      const t = resp.accessToken;
+      setState({ userId: payload.sub, email: null, role: payload.role ?? "user", isLoggedIn: true });
+      setToken(t);
+      api.getMe(t).then(({ user }) => {
+        setState((prev) => ({ ...prev, email: user.email }));
+      }).catch(() => {});
     }
   }
 
   function logout() {
     clearTokens();
-    setState({ userId: null, role: "user", isLoggedIn: false });
+    setState({ userId: null, email: null, role: "user", isLoggedIn: false });
     setToken(undefined);
   }
 

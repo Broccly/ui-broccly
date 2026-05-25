@@ -2,6 +2,7 @@ import type {
   CommentsResponse,
   CreatePostInput,
   FeedResponse,
+  MyPost,
   PostMutationResponse,
   PostResponse,
   SearchResponse,
@@ -61,7 +62,7 @@ export const api = {
 
   createPost(data: CreatePostInput, token: string): Promise<PostMutationResponse> {
     return apiFetch<PostMutationResponse>(
-      "/api/posts",
+      "/api/post/create",
       { method: "POST", body: JSON.stringify(data) },
       token
     );
@@ -97,6 +98,22 @@ export const api = {
       { method: "POST" },
       token
     );
+  },
+
+  getMyPosts(userId: string, token: string): Promise<{ posts: MyPost[] }> {
+    return apiFetch<{ posts: MyPost[] }>(
+      `/api/post?author=${encodeURIComponent(userId)}`,
+      {},
+      token
+    );
+  },
+
+  getPostById(id: string, token: string): Promise<{ post: MyPost }> {
+    return apiFetch<{ post: MyPost }>(`/api/post/${id}`, {}, token);
+  },
+
+  getMe(token: string): Promise<{ user: { email: string; name: string } }> {
+    return apiFetch<{ user: { email: string; name: string } }>("/api/user/me", {}, token);
   },
 
   followUser(userId: string, token: string): Promise<void> {

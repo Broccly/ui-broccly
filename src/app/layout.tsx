@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import GoogleAuthProvider from "@/components/GoogleAuthProvider";
+import { NewStoryProvider } from "@/context/NewStoryContext";
 
 export const metadata: Metadata = {
   title: "Broccly",
@@ -20,7 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased bg-white text-gray-900 min-h-screen">
         <GoogleAuthProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <NewStoryProvider>{children}</NewStoryProvider>
+          </AuthProvider>
         </GoogleAuthProvider>
       </body>
     </html>
