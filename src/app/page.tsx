@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import LandingNav from "@/components/LandingNav";
+
+export const metadata: Metadata = {
+  title: "Broccly – Read, write, and share ideas",
+};
 
 export default function LandingPage() {
   return (

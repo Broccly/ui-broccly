@@ -16,6 +16,10 @@ export default function NewStoryPage() {
   const [body, setBody] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    document.title = "New Story – Broccly";
+  }, []);
+
   // Keep canPublish in sync
   useEffect(() => {
     setCanPublish(title.trim().length > 0 && body.trim().length > 0);

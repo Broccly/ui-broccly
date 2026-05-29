@@ -25,6 +25,10 @@ export default function StoryPage() {
       .finally(() => setLoading(false));
   }, [id, token]);
 
+  useEffect(() => {
+    document.title = post ? `${post.title} – Broccly` : "Broccly";
+  }, [post]);
+
   return (
     <SidebarShell>
       {loading && <p className="text-gray-400 text-sm">Loading…</p>}

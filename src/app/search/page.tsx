@@ -1,4 +1,16 @@
+import type { Metadata } from "next";
 import { api } from "@/lib/api";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await searchParams;
+  return {
+    title: q ? `"${q}" – Search – Broccly` : "Search – Broccly",
+  };
+}
 import PostCard from "@/components/PostCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

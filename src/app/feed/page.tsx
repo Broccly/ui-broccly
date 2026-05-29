@@ -4,12 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import { api } from "@/lib/api";
+import { slugify } from "@/lib/utils";
 import type { MyPost } from "@/types/api";
 
 export default function FeedPage() {
   const [posts, setPosts] = useState<MyPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    document.title = "Feed – Broccly";
+  }, []);
 
   useEffect(() => {
     api
@@ -54,7 +59,7 @@ export default function FeedPage() {
 
                   {/* Title + preview */}
                   <Link
-                    href={`/@${post.author}/${post._id}?id=${post._id}`}
+                    href={`/@${post.author}/${slugify(post.title)}?id=${post._id}`}
                     className="group block"
                   >
                     <h2 className="text-base font-bold text-gray-900 group-hover:underline leading-snug mb-1 line-clamp-2">

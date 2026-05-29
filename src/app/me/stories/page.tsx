@@ -4,16 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import { slugify } from "@/lib/utils";
 import type { MyPost } from "@/types/api";
 import SidebarShell from "@/components/SidebarShell";
-
-function slugify(title: string) {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-");
-}
 
 export default function MyStoriesPage() {
   const { userId, email, token } = useAuth();
@@ -21,6 +14,10 @@ export default function MyStoriesPage() {
   const [posts, setPosts] = useState<MyPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    document.title = "Your Stories – Broccly";
+  }, []);
 
   useEffect(() => {
     if (!userId || !token) return;
