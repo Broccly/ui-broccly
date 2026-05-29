@@ -100,6 +100,10 @@ export const api = {
     );
   },
 
+  getAllPosts(): Promise<{ posts: MyPost[] }> {
+    return apiFetch<{ posts: MyPost[] }>("/api/post");
+  },
+
   getMyPosts(userId: string, token: string): Promise<{ posts: MyPost[] }> {
     return apiFetch<{ posts: MyPost[] }>(
       `/api/post?author=${encodeURIComponent(userId)}`,
