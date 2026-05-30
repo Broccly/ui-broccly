@@ -13,7 +13,7 @@ export default function CommentForm({
   postId: string;
   onAdded: () => void;
 }) {
-  const { isLoggedIn, token } = useAuth();
+  const { isLoggedIn, token, userId } = useAuth();
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,10 +27,10 @@ export default function CommentForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!body.trim() || !token) return;
+    if (!body.trim() || !token || !userId) return;
     setSubmitting(true);
     try {
-      await api.addComment(postId, body.trim(), token);
+      await api.addComment(postId, userId, body.trim(), token);
       setBody("");
       onAdded();
     } finally {

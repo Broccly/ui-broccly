@@ -64,6 +64,10 @@ export interface MyPost {
   title: string;
   body: string;
   author: string;
+  authorName?: string;
+  authorAvatarUrl?: string | null;
+  likes: number;
+  comments: number;
   created_at: string;
   updated_at: string;
 }

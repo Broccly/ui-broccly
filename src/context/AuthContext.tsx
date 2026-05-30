@@ -14,6 +14,7 @@ import { api } from "@/lib/api";
 interface AuthState {
   userId: string | null;
   email: string | null;
+  avatarUrl: string | null;
   role: "user" | "moderator" | "admin";
   isLoggedIn: boolean;
   hydrated: boolean;
@@ -31,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     userId: null,
     email: null,
+    avatarUrl: null,
     role: "user",
     isLoggedIn: false,
     hydrated: false,
@@ -43,9 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const payload = decodeToken(t);
       if (payload && payload.exp * 1000 > Date.now()) {
         setToken(t);
-        setState({ userId: payload.sub, email: null, role: payload.role ?? "user", isLoggedIn: true, hydrated: true });
+        setState({ userId: payload.sub, email: null, avatarUrl: null, role: payload.role ?? "user", isLoggedIn: true, hydrated: true });
         api.getMe(t).then(({ user }) => {
-          setState((prev) => ({ ...prev, email: user.email }));
+          setState((prev) => ({ ...prev, email: user.email, avatarUrl: user.avatarUrl ?? null }));
         }).catch(() => {});
       } else {
         clearTokens();
@@ -61,17 +63,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const payload = decodeToken(resp.accessToken);
     if (payload) {
       const t = resp.accessToken;
-      setState({ userId: payload.sub, email: null, role: payload.role ?? "user", isLoggedIn: true, hydrated: true });
+      setState({ userId: payload.sub, email: null, avatarUrl: null, role: payload.role ?? "user", isLoggedIn: true, hydrated: true });
       setToken(t);
       api.getMe(t).then(({ user }) => {
-        setState((prev) => ({ ...prev, email: user.email }));
+        setState((prev) => ({ ...prev, email: user.email, avatarUrl: user.avatarUrl ?? null }));
       }).catch(() => {});
     }
   }
 
   function logout() {
     clearTokens();
-    setState({ userId: null, email: null, role: "user", isLoggedIn: false, hydrated: true });
+    setState({ userId: null, email: null, avatarUrl: null, role: "user", isLoggedIn: false, hydrated: true });
     setToken(undefined);
   }
 

@@ -53,8 +53,14 @@ export default function FeedPage() {
                 <article key={post._id} className="py-6">
                   {/* Author row */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shrink-0 inline-block" />
-                    <span className="text-xs font-medium text-gray-700">{post.author}</span>
+                    {post.authorAvatarUrl ? (
+                      <img src={post.authorAvatarUrl} alt={post.authorName ?? post.author} className="w-6 h-6 rounded-full object-cover shrink-0" referrerPolicy="no-referrer" />
+                    ) : (
+                      <span className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shrink-0 inline-flex items-center justify-center text-white text-xs font-semibold">
+                        {(post.authorName ?? post.author).charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <span className="text-xs font-medium text-gray-700">{post.authorName ?? post.author}</span>
                   </div>
 
                   {/* Title + preview */}

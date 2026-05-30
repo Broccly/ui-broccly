@@ -80,24 +80,28 @@ export const api = {
     );
   },
 
-  getComments(postId: string): Promise<CommentsResponse> {
-    return apiFetch<CommentsResponse>(`/api/posts/${postId}/comments`);
+  getComments(postId: string): Promise<{ comments: Array<{ _id: string; post: string; author: string; text: string; updated_at: string }> }> {
+    return apiFetch(`/api/comment/post/${postId}`);
   },
 
-  addComment(postId: string, body: string, token: string): Promise<void> {
+  addComment(postId: string, author: string, text: string, token: string): Promise<void> {
     return apiFetch<void>(
-      `/api/posts/${postId}/comment`,
-      { method: "POST", body: JSON.stringify({ body }) },
+      "/api/comment/create",
+      { method: "POST", body: JSON.stringify({ post: postId, author, text }) },
       token
     );
   },
 
-  likePost(postId: string, token: string): Promise<void> {
-    return apiFetch<void>(
-      `/api/posts/${postId}/like`,
-      { method: "POST" },
+  likePost(postId: string, author: string, token: string): Promise<{ like: { _id: string } }> {
+    return apiFetch(
+      "/api/like/create",
+      { method: "POST", body: JSON.stringify({ post: postId, author }) },
       token
     );
+  },
+
+  unlikePost(likeId: string, token: string): Promise<void> {
+    return apiFetch<void>(`/api/like/${likeId}`, { method: "DELETE" }, token);
   },
 
   getAllPosts(): Promise<{ posts: MyPost[] }> {
@@ -116,15 +120,24 @@ export const api = {
     return apiFetch<{ post: MyPost }>(`/api/post/${id}`, {}, token);
   },
 
-  getMe(token: string): Promise<{ user: { email: string; name: string } }> {
+  getMe(token: string): Promise<{ user: { email: string; name: string; avatarUrl?: string | null } }> {
     return apiFetch<{ user: { email: string; name: string } }>("/api/user/me", {}, token);
   },
 
-  followUser(userId: string, token: string): Promise<void> {
-    return apiFetch<void>(
-      `/api/users/${userId}/follow`,
-      { method: "POST" },
+  checkFollow(followingTo: string, follower: string, token: string): Promise<{ following: boolean; followId: string | null }> {
+    const params = new URLSearchParams({ follower, following_to: followingTo });
+    return apiFetch(`/api/follow/check?${params.toString()}`, {}, token);
+  },
+
+  followUser(followingTo: string, follower: string, token: string): Promise<{ result: { _id: string } }> {
+    return apiFetch(
+      "/api/follow/create",
+      { method: "POST", body: JSON.stringify({ follower, following_to: followingTo }) },
       token
     );
+  },
+
+  unfollowUser(followId: string, token: string): Promise<void> {
+    return apiFetch<void>(`/api/follow/${followId}`, { method: "DELETE" }, token);
   },
 };
