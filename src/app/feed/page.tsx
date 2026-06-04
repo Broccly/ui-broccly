@@ -13,10 +13,6 @@ export default function FeedPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    document.title = "Feed – Broccly";
-  }, []);
-
-  useEffect(() => {
     api
       .getAllPosts()
       .then(({ posts }) => setPosts(posts))

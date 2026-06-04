@@ -4,6 +4,12 @@ import LandingNav from "@/components/LandingNav";
 
 export const metadata: Metadata = {
   title: "Broccly – Read, write, and share ideas",
+  description: "Discover stories, thinking, and expertise from writers on any topic that matters to you.",
+  openGraph: {
+    title: "Broccly – Read, write, and share ideas",
+    description: "Discover stories, thinking, and expertise from writers on any topic that matters to you.",
+    type: "website",
+  },
 };
 
 export default function LandingPage() {

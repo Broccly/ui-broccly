@@ -8,10 +8,20 @@ import Sidebar from "@/components/Sidebar";
 import MainContent from "@/components/MainContent";
 
 export const metadata: Metadata = {
-  title: "Broccly",
+  title: {
+    default: "Broccly",
+    template: "%s",
+  },
   description: "Your space to read, write, and share ideas.",
   icons: {
     icon: "/broccly.png",
+  },
+  openGraph: {
+    siteName: "Broccly",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
   },
 };
 

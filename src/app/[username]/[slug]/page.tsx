@@ -1,108 +1,133 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import type { Metadata } from "next";
 import { api } from "@/lib/api";
-import type { MyPost } from "@/types/api";
 import SidebarShell from "@/components/SidebarShell";
-import LikeButton from "@/components/LikeButton";
-import FollowButton from "@/components/FollowButton";
-import CommentsDrawer from "@/components/CommentsDrawer";
+import StoryInteractive from "@/components/StoryInteractive";
 
-function AuthorAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
-  if (avatarUrl) {
-    return (
-      <img src={avatarUrl} alt={name} className="w-9 h-9 rounded-full object-cover shrink-0" referrerPolicy="no-referrer" />
-    );
-  }
-  const initial = (name || "?").charAt(0).toUpperCase();
-  return (
-    <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-600 shrink-0">
-      {initial}
-    </div>
-  );
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://broccly.app";
+
+interface Props {
+  params: Promise<{ username: string; slug: string }>;
+  searchParams: Promise<{ id?: string }>;
 }
 
-export default function StoryPage() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
-  const { token } = useAuth();
+async function fetchPost(id: string) {
+  try {
+    const { post } = await api.getPostById(id);
+    return post;
+  } catch {
+    return null;
+  }
+}
 
-  const [post, setPost] = useState<MyPost | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { id } = await searchParams;
+  if (!id) return { title: "Story – Broccly" };
 
-  useEffect(() => {
-    if (!id) return;
-    api
-      .getPostById(id, token ?? undefined)
-      .then(({ post }) => setPost(post))
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load story."))
-      .finally(() => setLoading(false));
-  }, [id, token]);
+  const post = await fetchPost(id);
+  if (!post) return { title: "Story – Broccly" };
 
-  useEffect(() => {
-    document.title = post ? `${post.title} – Broccly` : "Broccly";
-  }, [post]);
+  const description = post.body.slice(0, 160).trimEnd();
+  const url = `${BASE_URL}/@${post.author}/${encodeURIComponent(post.title.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-"))}?id=${post._id}`;
+
+  return {
+    title: `${post.title} – Broccly`,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      url,
+      type: "article",
+      publishedTime: post.created_at,
+      modifiedTime: post.updated_at,
+      authors: [post.authorName ?? post.author],
+      ...(post.authorAvatarUrl ? { images: [{ url: post.authorAvatarUrl }] } : {}),
+    },
+    twitter: {
+      card: "summary",
+      title: post.title,
+      description,
+    },
+  };
+}
+
+export default async function StoryPage({ searchParams }: Props) {
+  const { id } = await searchParams;
+
+  if (!id) {
+    return (
+      <SidebarShell>
+        <p className="text-red-500 text-sm">Story not found.</p>
+      </SidebarShell>
+    );
+  }
+
+  const post = await fetchPost(id);
+
+  if (!post) {
+    return (
+      <SidebarShell>
+        <p className="text-red-500 text-sm">Failed to load story.</p>
+      </SidebarShell>
+    );
+  }
+
+  const authorName = post.authorName ?? post.author;
+  const publishedDate = new Date(post.created_at).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.body.slice(0, 160).trimEnd(),
+    author: { "@type": "Person", name: authorName },
+    datePublished: post.created_at,
+    dateModified: post.updated_at,
+  };
 
   return (
     <SidebarShell>
-      {loading && <p className="text-gray-400 text-sm">Loading…</p>}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {post && (
-        <article className="max-w-2xl">
-          {/* Title */}
-          <h1 className="text-4xl font-bold leading-tight mb-6">{post.title}</h1>
+      <article className="max-w-2xl">
+        <h1 className="text-4xl font-bold leading-tight mb-6">{post.title}</h1>
 
-          {/* Author row */}
-          <div className="flex items-center gap-3 mb-6">
-            <AuthorAvatar name={post.authorName ?? post.author} avatarUrl={post.authorAvatarUrl} />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-medium text-gray-900 truncate">{post.authorName ?? post.author}</span>
-                <FollowButton targetUserId={post.author} />
-              </div>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {new Date(post.created_at).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
+        <div className="flex items-center gap-3 mb-6">
+          {post.authorAvatarUrl ? (
+            <img
+              src={post.authorAvatarUrl}
+              alt={authorName}
+              className="w-9 h-9 rounded-full object-cover shrink-0"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-600 shrink-0">
+              {authorName.charAt(0).toUpperCase()}
             </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-medium text-gray-900 truncate block">{authorName}</span>
+            <p className="text-xs text-gray-400 mt-0.5">{publishedDate}</p>
           </div>
+        </div>
 
-          {/* Action bar — above story body */}
-          <div className="flex items-center gap-4 py-3 border-y border-gray-100 mb-8">
-            <LikeButton postId={post._id} count={post.likes} />
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3h6M4.5 5.25a2.25 2.25 0 012.25-2.25h10.5A2.25 2.25 0 0119.5 5.25v9a2.25 2.25 0 01-2.25 2.25H8.25l-3.75 3.75V5.25z" />
-              </svg>
-              <span>{post.comments}</span>
-            </button>
-          </div>
-
-          {/* Story body */}
-          <div className="text-lg text-gray-800 leading-relaxed whitespace-pre-wrap">
-            {post.body}
-          </div>
-        </article>
-      )}
-
-      {post && (
-        <CommentsDrawer
+        <StoryInteractive
           postId={post._id}
-          isOpen={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+          authorUserId={post.author}
+          likeCount={post.likes}
+          commentCount={post.comments}
         />
-      )}
+
+        <div className="text-lg text-gray-800 leading-relaxed whitespace-pre-wrap">
+          {post.body}
+        </div>
+      </article>
     </SidebarShell>
   );
 }
