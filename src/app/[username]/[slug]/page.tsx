@@ -35,9 +35,9 @@ export default function StoryPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    if (!id || !token) return;
+    if (!id) return;
     api
-      .getPostById(id, token)
+      .getPostById(id, token ?? undefined)
       .then(({ post }) => setPost(post))
       .catch((err) => setError(err instanceof Error ? err.message : "Failed to load story."))
       .finally(() => setLoading(false));

@@ -116,7 +116,7 @@ export const api = {
     );
   },
 
-  getPostById(id: string, token: string): Promise<{ post: MyPost }> {
+  getPostById(id: string, token?: string): Promise<{ post: MyPost }> {
     return apiFetch<{ post: MyPost }>(`/api/post/${id}`, {}, token);
   },
 
