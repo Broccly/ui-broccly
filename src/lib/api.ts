@@ -140,4 +140,19 @@ export const api = {
   unfollowUser(followId: string, token: string): Promise<void> {
     return apiFetch<void>(`/api/follow/${followId}`, { method: "DELETE" }, token);
   },
+
+  async uploadImage(file: File, token: string): Promise<{ url: string }> {
+    const form = new FormData();
+    form.append("image", file);
+    const res = await fetch(`${BASE}/api/upload`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.statusText);
+      throw new ApiError(res.status, text);
+    }
+    return res.json();
+  },
 };

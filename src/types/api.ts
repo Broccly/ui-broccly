@@ -57,6 +57,7 @@ export interface CreatePostInput {
   title: string;
   body: string;
   author: string;
+  coverImage?: string | null;
 }
 
 export interface MyPost {
@@ -64,6 +65,7 @@ export interface MyPost {
   title: string;
   body: string;
   author: string;
+  coverImage?: string | null;
   authorName?: string;
   authorAvatarUrl?: string | null;
   likes: number;

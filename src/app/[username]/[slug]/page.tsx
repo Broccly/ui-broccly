@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { api } from "@/lib/api";
 import SidebarShell from "@/components/SidebarShell";
 import StoryInteractive from "@/components/StoryInteractive";
@@ -40,7 +41,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       publishedTime: post.created_at,
       modifiedTime: post.updated_at,
       authors: [post.authorName ?? post.author],
-      ...(post.authorAvatarUrl ? { images: [{ url: post.authorAvatarUrl }] } : {}),
+      ...(post.coverImage
+        ? { images: [{ url: post.coverImage }] }
+        : post.authorAvatarUrl
+        ? { images: [{ url: post.authorAvatarUrl }] }
+        : {}),
     },
     twitter: {
       card: "summary",
@@ -96,6 +101,17 @@ export default async function StoryPage({ searchParams }: Props) {
       />
 
       <article className="max-w-2xl">
+        {post.coverImage && (
+          <div className="relative w-full h-72 rounded-xl overflow-hidden mb-8">
+            <Image
+              src={post.coverImage}
+              alt={post.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
         <h1 className="text-4xl font-bold leading-tight mb-6">{post.title}</h1>
 
         <div className="flex items-center gap-3 mb-6">
