@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { api } from "@/lib/api";
+import { stripHtml } from "@/lib/utils";
 import SidebarShell from "@/components/SidebarShell";
 import StoryInteractive from "@/components/StoryInteractive";
 
@@ -27,7 +28,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const post = await fetchPost(id);
   if (!post) return { title: "Story – Broccly" };
 
-  const description = post.body.slice(0, 160).trimEnd();
+  const description = stripHtml(post.body).slice(0, 160).trimEnd();
   const url = `${BASE_URL}/@${post.author}/${encodeURIComponent(post.title.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-"))}?id=${post._id}`;
 
   const image = post.coverImage ?? post.authorAvatarUrl;
@@ -89,7 +90,7 @@ export default async function StoryPage({ searchParams }: Props) {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.title,
-    description: post.body.slice(0, 160).trimEnd(),
+    description: stripHtml(post.body).slice(0, 160).trimEnd(),
     author: { "@type": "Person", name: authorName },
     datePublished: post.created_at,
     dateModified: post.updated_at,
@@ -142,9 +143,10 @@ export default async function StoryPage({ searchParams }: Props) {
           commentCount={post.comments}
         />
 
-        <div className="text-lg text-gray-800 leading-relaxed whitespace-pre-wrap">
-          {post.body}
-        </div>
+        <div
+          className="prose prose-lg prose-gray max-w-none text-gray-800 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: post.body }}
+        />
       </article>
     </SidebarShell>
   );

@@ -16,7 +16,7 @@ export default function Nav() {
   const router = useRouter();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
-  const { canPublish, triggerPublish } = useNewStory();
+  const { canPublish, triggerPublish, publishLabel } = useNewStory();
   const isNewStory = pathname === "/new-story";
 
   function handleSearch(e: React.FormEvent) {
@@ -71,7 +71,7 @@ export default function Nav() {
                   disabled={!canPublish}
                   className="px-4 py-1.5 rounded-full text-sm font-medium bg-green-600 text-white hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  Publish
+                  {publishLabel}
                 </button>
               ) : (
                 <Link href="/new-story" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors">

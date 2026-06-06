@@ -1,36 +1,63 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useNewStory } from "@/context/NewStoryContext";
 import { api } from "@/lib/api";
 import AppShell from "@/components/AppShell";
 import Image from "next/image";
+import PostEditor, { PostEditorHandle } from "@/components/PostEditor";
 
 export default function NewStoryPage() {
   const { token, userId } = useAuth();
   const router = useRouter();
-  const { setCanPublish, registerPublish } = useNewStory();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("id");
+  const { setCanPublish, registerPublish, setPublishLabel } = useNewStory();
 
   const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const [initialHTML, setInitialHTML] = useState<string | undefined>(undefined);
+  const [bodyHasContent, setBodyHasContent] = useState(false);
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [loaded, setLoaded] = useState(!editId);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<PostEditorHandle>(null);
 
   useEffect(() => {
-    document.title = "New Story – Broccly";
-  }, []);
+    document.title = editId ? "Edit Story – Broccly" : "New Story – Broccly";
+  }, [editId]);
 
   useEffect(() => {
-    setCanPublish(title.trim().length > 0 && body.trim().length > 0);
-  }, [title, body, setCanPublish]);
+    setPublishLabel(editId ? "Update" : "Publish");
+  }, [editId, setPublishLabel]);
 
   useEffect(() => {
-    return () => setCanPublish(false);
-  }, [setCanPublish]);
+    if (!editId || !token) return;
+    api
+      .getPostById(editId, token)
+      .then(({ post }) => {
+        setTitle(post.title);
+        setInitialHTML(post.body);
+        setBodyHasContent(post.body.trim().length > 0);
+        setCoverImage(post.coverImage ?? null);
+      })
+      .catch(() => setError("Failed to load story."))
+      .finally(() => setLoaded(true));
+  }, [editId, token]);
+
+  useEffect(() => {
+    setCanPublish(title.trim().length > 0 && bodyHasContent);
+  }, [title, bodyHasContent, setCanPublish]);
+
+  useEffect(() => {
+    return () => {
+      setCanPublish(false);
+      setPublishLabel("Publish");
+    };
+  }, [setCanPublish, setPublishLabel]);
 
   const handleImageChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,16 +79,31 @@ export default function NewStoryPage() {
     [token]
   );
 
+  const handleInlineImageUpload = useCallback(
+    async (file: File) => {
+      if (!token) throw new Error("Not authenticated");
+      const { url } = await api.uploadImage(file, token);
+      return url;
+    },
+    [token]
+  );
+
   const handlePublish = useCallback(async () => {
     if (!token || !userId) return;
     setError("");
     try {
-      await api.createPost({ title, body, author: userId, coverImage }, token);
-      router.push("/feed");
+      const body = editorRef.current?.getHTML() ?? "";
+      if (editId) {
+        await api.updatePost(editId, { title, body, coverImage }, token);
+        router.push("/me/stories");
+      } else {
+        await api.createPost({ title, body, author: userId, coverImage }, token);
+        router.push("/feed");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to publish.");
     }
-  }, [title, body, coverImage, token, userId, router]);
+  }, [title, coverImage, token, userId, router, editId]);
 
   useEffect(() => {
     registerPublish(handlePublish);
@@ -117,12 +159,14 @@ export default function NewStoryPage() {
           className="w-full text-4xl font-bold placeholder-gray-300 outline-none border-none bg-transparent"
           maxLength={180}
         />
-        <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Tell your story…"
-          className="w-full text-lg text-gray-700 placeholder-gray-300 outline-none border-none bg-transparent resize-none min-h-[400px]"
-        />
+        {loaded && (
+          <PostEditor
+            ref={editorRef}
+            initialHTML={initialHTML}
+            onImageUpload={handleInlineImageUpload}
+            onChange={(hasContent) => setBodyHasContent(hasContent)}
+          />
+        )}
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </div>
     </AppShell>

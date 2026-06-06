@@ -76,9 +76,6 @@ export interface MyPost {
 
 export interface UpdatePostInput {
   title?: string;
-  excerpt?: string;
-  bodyJson?: unknown;
-  bodyHtml?: string;
-  visibility?: "public" | "unlisted" | "private";
-  publish?: boolean;
+  body?: string;
+  coverImage?: string | null;
 }

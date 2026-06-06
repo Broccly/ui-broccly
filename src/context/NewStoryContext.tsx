@@ -7,6 +7,8 @@ interface NewStoryContextValue {
   setCanPublish: (v: boolean) => void;
   triggerPublish: () => void;
   registerPublish: (fn: () => void) => void;
+  publishLabel: string;
+  setPublishLabel: (v: string) => void;
 }
 
 const NewStoryContext = createContext<NewStoryContextValue>({
@@ -14,10 +16,13 @@ const NewStoryContext = createContext<NewStoryContextValue>({
   setCanPublish: () => {},
   triggerPublish: () => {},
   registerPublish: () => {},
+  publishLabel: "Publish",
+  setPublishLabel: () => {},
 });
 
 export function NewStoryProvider({ children }: { children: React.ReactNode }) {
   const [canPublish, setCanPublish] = useState(false);
+  const [publishLabel, setPublishLabel] = useState("Publish");
   const publishFnRef = useRef<() => void>(() => {});
 
   const registerPublish = useCallback((fn: () => void) => {
@@ -29,7 +34,9 @@ export function NewStoryProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <NewStoryContext.Provider value={{ canPublish, setCanPublish, triggerPublish, registerPublish }}>
+    <NewStoryContext.Provider
+      value={{ canPublish, setCanPublish, triggerPublish, registerPublish, publishLabel, setPublishLabel }}
+    >
       {children}
     </NewStoryContext.Provider>
   );

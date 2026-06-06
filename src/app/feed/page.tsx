@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import { api } from "@/lib/api";
-import { slugify } from "@/lib/utils";
+import { slugify, stripHtml } from "@/lib/utils";
 import type { MyPost } from "@/types/api";
 
 export default function FeedPage() {
@@ -43,7 +43,7 @@ export default function FeedPage() {
                 month: "short",
                 day: "numeric",
               });
-              const preview = post.body.slice(0, 150).trimEnd();
+              const preview = stripHtml(post.body).slice(0, 150).trimEnd();
 
               return (
                 <article key={post._id} className="py-6">

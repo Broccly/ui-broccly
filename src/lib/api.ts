@@ -74,10 +74,14 @@ export const api = {
     token: string
   ): Promise<PostMutationResponse> {
     return apiFetch<PostMutationResponse>(
-      `/api/posts/${id}`,
-      { method: "PATCH", body: JSON.stringify(data) },
+      `/api/post/${id}`,
+      { method: "PUT", body: JSON.stringify(data) },
       token
     );
+  },
+
+  deletePost(id: string, token: string): Promise<void> {
+    return apiFetch<void>(`/api/post/${id}`, { method: "DELETE" }, token);
   },
 
   getComments(postId: string): Promise<{ comments: Array<{ _id: string; post: string; author: string; text: string; updated_at: string }> }> {

@@ -2,7 +2,8 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { forwardRef, useImperativeHandle } from "react";
+import Image from "@tiptap/extension-image";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -13,12 +14,18 @@ export interface PostEditorHandle {
 
 interface PostEditorProps {
   initialHTML?: string;
+  onImageUpload?: (file: File) => Promise<string>;
+  onChange?: (hasContent: boolean) => void;
 }
 
 const PostEditor = forwardRef<PostEditorHandle, PostEditorProps>(
-  function PostEditor({ initialHTML }, ref) {
+  function PostEditor({ initialHTML, onImageUpload, onChange }, ref) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
+
     const editor = useEditor({
-      extensions: [StarterKit],
+      immediatelyRender: false,
+      extensions: [StarterKit, Image],
       content: initialHTML ?? "",
       editorProps: {
         attributes: {
@@ -26,12 +33,28 @@ const PostEditor = forwardRef<PostEditorHandle, PostEditorProps>(
             "prose prose-gray max-w-none min-h-[300px] focus:outline-none p-4",
         },
       },
+      onUpdate: ({ editor }) => {
+        onChange?.(!editor.isEmpty);
+      },
     });
 
     useImperativeHandle(ref, () => ({
       getHTML: () => editor?.getHTML() ?? "",
       getJSON: () => editor?.getJSON() ?? {},
     }));
+
+    const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !editor || !onImageUpload) return;
+      setUploadingImage(true);
+      try {
+        const url = await onImageUpload(file);
+        editor.chain().focus().setImage({ src: url }).run();
+      } finally {
+        setUploadingImage(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
 
     return (
       <div className="border border-gray-300 rounded overflow-hidden">
@@ -97,6 +120,25 @@ const PostEditor = forwardRef<PostEditorHandle, PostEditorProps>(
             >
               {"</>"}
             </ToolbarButton>
+            {onImageUpload && (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageFile}
+                />
+                <ToolbarButton
+                  onClick={() => fileInputRef.current?.click()}
+                  active={false}
+                  title="Insert image"
+                  disabled={uploadingImage}
+                >
+                  {uploadingImage ? "Uploading…" : "🖼 Image"}
+                </ToolbarButton>
+              </>
+            )}
           </div>
         )}
         <EditorContent editor={editor} />
@@ -110,11 +152,13 @@ function ToolbarButton({
   active,
   title,
   children,
+  disabled,
 }: {
   onClick: () => void;
   active: boolean;
   title: string;
   children: React.ReactNode;
+  disabled?: boolean;
 }) {
   return (
     <Button
@@ -123,6 +167,7 @@ function ToolbarButton({
       size="sm"
       onClick={onClick}
       title={title}
+      disabled={disabled}
       className={cn("px-2 h-7 text-sm", !active && "text-gray-700")}
     >
       {children}
