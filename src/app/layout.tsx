@@ -7,7 +7,10 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import Sidebar from "@/components/Sidebar";
 import MainContent from "@/components/MainContent";
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.broccly.in";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: {
     default: "Broccly",
     template: "%s",

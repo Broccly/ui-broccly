@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { api } from "@/lib/api";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://broccly.app";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.broccly.in";
 
 function slugify(title: string) {
   return title

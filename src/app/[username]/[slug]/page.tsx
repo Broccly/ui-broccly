@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import SidebarShell from "@/components/SidebarShell";
 import StoryInteractive from "@/components/StoryInteractive";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://broccly.app";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.broccly.in";
 
 interface Props {
   params: Promise<{ username: string; slug: string }>;
@@ -30,9 +30,14 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const description = post.body.slice(0, 160).trimEnd();
   const url = `${BASE_URL}/@${post.author}/${encodeURIComponent(post.title.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-"))}?id=${post._id}`;
 
+  const image = post.coverImage ?? post.authorAvatarUrl;
+
   return {
     title: `${post.title} – Broccly`,
     description,
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title: post.title,
       description,
@@ -41,16 +46,13 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
       publishedTime: post.created_at,
       modifiedTime: post.updated_at,
       authors: [post.authorName ?? post.author],
-      ...(post.coverImage
-        ? { images: [{ url: post.coverImage }] }
-        : post.authorAvatarUrl
-        ? { images: [{ url: post.authorAvatarUrl }] }
-        : {}),
+      ...(image ? { images: [{ url: image }] } : {}),
     },
     twitter: {
-      card: "summary",
+      card: image ? "summary_large_image" : "summary",
       title: post.title,
       description,
+      ...(image ? { images: [image] } : {}),
     },
   };
 }
