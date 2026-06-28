@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useNewStory } from "@/context/NewStoryContext";
@@ -9,7 +9,7 @@ import AppShell from "@/components/AppShell";
 import Image from "next/image";
 import PostEditor, { PostEditorHandle } from "@/components/PostEditor";
 
-export default function NewStoryPage() {
+function NewStoryInner() {
   const { token, userId } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -170,5 +170,13 @@ export default function NewStoryPage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </div>
     </AppShell>
+  );
+}
+
+export default function NewStoryPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewStoryInner />
+    </Suspense>
   );
 }
