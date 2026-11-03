@@ -1,52 +1,30 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext";
-import GoogleAuthProvider from "@/components/GoogleAuthProvider";
-import { NewStoryProvider } from "@/context/NewStoryContext";
-import { SidebarProvider } from "@/context/SidebarContext";
-import Sidebar from "@/components/Sidebar";
-import MainContent from "@/components/MainContent";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.broccly.in";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
-  title: {
-    default: "Broccly",
-    template: "%s",
-  },
-  description: "Your space to read, write, and share ideas.",
-  icons: {
-    icon: "/broccly.png",
-  },
+  title: "Broccly – A home for the apps we build",
+  description:
+    "Broccly is a small studio building and shipping many apps. Each one lives on its own broccly subdomain.",
+  icons: { icon: "/broccly.png" },
   openGraph: {
     siteName: "Broccly",
+    title: "Broccly – A home for the apps we build",
+    description:
+      "Broccly is a small studio building and shipping many apps. Each one lives on its own broccly subdomain.",
     type: "website",
   },
-  twitter: {
-    card: "summary",
-  },
+  twitter: { card: "summary" },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-white text-gray-900 min-h-screen">
-        <GoogleAuthProvider>
-          <AuthProvider>
-            <NewStoryProvider>
-              <SidebarProvider>
-                <Sidebar />
-                <MainContent>{children}</MainContent>
-              </SidebarProvider>
-            </NewStoryProvider>
-          </AuthProvider>
-        </GoogleAuthProvider>
-      </body>
+      <body className="antialiased bg-white text-gray-900 min-h-screen">{children}</body>
     </html>
   );
 }
